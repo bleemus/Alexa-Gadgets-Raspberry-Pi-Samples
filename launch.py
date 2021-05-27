@@ -112,18 +112,18 @@ if len(apt_missing_packages) > 0 or first_time_setup:
             print("Package {} wasn't installed: [{}]\n Please try to manually install this package.".format(package, e))
             sys.exit(0)
 
-# install patched bluez 5.50 package if it is first time setup or if version 5.50 is not present
+# install patched bluez 5.58 package if it is first time setup or if version 5.58 is not present
 if first_time_setup or not cache['bluez'].is_installed or \
-        '5.50' not in subprocess.check_output('dpkg -s bluez | grep -i version', shell=True).decode('ascii'):
+        '5.58' not in subprocess.check_output('dpkg -s bluez | grep -i version', shell=True).decode('ascii'):
 
-    # display the terms and conditions associated with downloading, modifying and installing Bluez-5.50
-    TERMS = "\nThe Alexa Gadgets Raspberry Pi launch script provided herein will retrieve the 'Bluez-5.50' package " + \
+    # display the terms and conditions associated with downloading, modifying and installing Bluez-5.58
+    TERMS = "\nThe Alexa Gadgets Raspberry Pi launch script provided herein will retrieve the 'Bluez-5.58' package " + \
             "at install-time from third-party sources. There are terms and conditions that you need to agree " + \
-            "to abide by if you choose to install the 'Bluez-5.50' package " + \
-            "(https://git.kernel.org/pub/scm/bluetooth/bluez.git/tree/COPYING?h=5.50). This script will also enable you " + \
-            "to modify and install the 'bluez-5.50' package to enable notification callbacks after reconnections to a " + \
+            "to abide by if you choose to install the 'Bluez-5.58' package " + \
+            "(https://git.kernel.org/pub/scm/bluetooth/bluez.git/tree/COPYING?h=5.58). This script will also enable you " + \
+            "to modify and install the 'bluez-5.58' package to enable notification callbacks after reconnections to a " + \
             "paired Echo device. This is required for communication between your gadget and the Echo device over BLE. " + \
-            "If you do not agree with every term and condition associated with 'Bluez-5.50', " + \
+            "If you do not agree with every term and condition associated with 'Bluez-5.58', " + \
             "enter 'QUIT', else enter 'AGREE'.\n:"
 
     # if terms and conditions are not agreed, quit the script
@@ -131,21 +131,21 @@ if first_time_setup or not cache['bluez'].is_installed or \
     if terms_decision != 'AGREE':
         sys.exit()
 
-    print("Downloading bluez-5.50 and modifying it..")
-    # download the bluez-5.50 distribution
-    bluez_file_path = path.join(path.join(path.dirname(path.abspath(__file__))), "bluez-5.50.tar.xz")
-    urllib.request.urlretrieve("http://www.kernel.org/pub/linux/bluetooth/bluez-5.50.tar.xz", bluez_file_path)
-    # extract the contents of the patched bluez-5.50 tar file
+    print("Downloading bluez-5.58 and modifying it..")
+    # download the bluez-5.58 distribution
+    bluez_file_path = path.join(path.join(path.dirname(path.abspath(__file__))), "bluez-5.58.tar.xz")
+    urllib.request.urlretrieve("http://www.kernel.org/pub/linux/bluetooth/bluez-5.58.tar.xz", bluez_file_path)
+    # extract the contents of the patched bluez-5.58 tar file
     tf = tarfile.open(bluez_file_path)
     tf.extractall()
     bluez_folder_path = bluez_file_path.replace(".tar.xz", "")
 
     # enable Notification callbacks by commneting out the notification callback condition
-    comment_line_number = int(subprocess.check_output("grep -n 'if (ccc->value\[0\] == value\[0\] && ccc->value\[1\] == value\[1\])' {}/src/gatt-database.c | head -n 1 | cut -d: -f1".format(bluez_folder_path), shell=True).decode('ascii'))
+    comment_line_number = int(subprocess.check_output("grep -n 'if (val == ccc->value)' {}/src/gatt-database.c | head -n 1 | cut -d: -f1".format(bluez_folder_path), shell=True).decode('ascii'))
     subprocess.run("sed -i '{},{}s/^/\/\//' {}/src/gatt-database.c".format(comment_line_number, comment_line_number+1, bluez_folder_path), shell=True)
 
-    print("Installing modified bluez-5.50...")
-    # install the patched bluez-5.50 package
+    print("Installing modified bluez-5.58...")
+    # install the patched bluez-5.58 package
     subprocess.run(
         "cd {} ; ./configure; sudo make; sudo make install".format(bluez_folder_path),
         shell=True)
